@@ -1,60 +1,66 @@
 <template>
   <div class="validate-input-container pb-3">
+    <label
+      class="form-label"
+      v-if="label"
+      :for="`${label || ''}${Date.now()}`"
+      >{{ label || '' }}</label
+    >
     <input
       v-if="tag !== 'textarea'"
       class="form-control"
       :class="{ 'is-invalid': inputRef.error }"
-      @blur="validateInput"
       v-model="inputRef.val"
+      @blur="validateInput"
       v-bind="$attrs"
     />
     <textarea
       v-else
       class="form-control"
       :class="{ 'is-invalid': inputRef.error }"
-      @blur="validateInput"
       v-model="inputRef.val"
+      @blur="validateInput"
       v-bind="$attrs"
+    ></textarea>
+    <div
+      id="validationServerUsernameFeedback"
+      class="invalid-feedback"
+      v-if="inputRef.error"
     >
-    </textarea>
-    <span v-if="inputRef.error" class="invalid-feedback">{{
-      inputRef.message
-    }}</span>
+      {{ inputRef.message }}
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, onMounted, computed } from 'vue';
-import { emitter } from './ValidateForm.vue';
-const emailReg =
-  /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-
-// 验证规则
-interface RuleProp {
+import { computed, defineComponent, onMounted, PropType, reactive } from 'vue';
+import { emitter } from '@/components/ValidateForm.vue';
+export interface RuleProp {
   type: 'required' | 'email' | 'custom';
   message: string;
   validator?: () => boolean;
 }
 export type RulesProp = RuleProp[];
-export type TagType = 'input' | 'textarea';
+export type TagType = 'input' | 'email' | 'textarea';
+const emailReg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*.\w+([-.]\w+)*$/;
 export default defineComponent({
+  name: 'ValidateInput',
   props: {
     rules: Array as PropType<RulesProp>,
     modelValue: String,
+    label: String,
     tag: {
       type: String as PropType<TagType>,
       default: 'input',
     },
   },
-  //禁用组件属性继承
   inheritAttrs: false,
-
-  setup(props, context) {
+  setup(props, { emit }) {
     const inputRef = reactive({
       val: computed({
         get: () => props.modelValue || '',
         set: (val) => {
-          context.emit('update:modelValue', val);
+          emit('update:modelValue', val);
         },
       }),
       error: false,
@@ -86,7 +92,7 @@ export default defineComponent({
       return true;
     };
     onMounted(() => {
-      emitter.emit('formItemCreated', validateInput);
+      emitter.emit('form-item-created', validateInput);
     });
     return {
       inputRef,

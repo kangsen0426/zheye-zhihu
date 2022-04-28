@@ -4,10 +4,10 @@
   </li>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue';
 export default defineComponent({
-  namee: 'DropdownItem',
+  name: 'DropDownItem',
   props: {
     disabled: {
       type: Boolean,

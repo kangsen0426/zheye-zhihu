@@ -14,10 +14,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue';
-import useClickOutside from '../hooks/useClickOutside';
+import { defineComponent, ref, watch, Ref } from 'vue';
+import useClickOutside from '@/hooks/useClickOutside';
+import { useRoute } from 'vue-router';
+
 export default defineComponent({
-  name: 'DropdownMenu',
+  name: 'DropDown',
   props: {
     title: {
       type: String,
@@ -26,22 +28,27 @@ export default defineComponent({
   },
   setup() {
     const isOpen = ref(false);
-    const dropdownRef = ref<null | HTMLElement>(null);
+    const dropdownRef: Ref<HTMLElement | null> = ref(null);
+    const isClickOutside = useClickOutside(dropdownRef);
+    const route = useRoute();
     const toggleOpen = () => {
       isOpen.value = !isOpen.value;
     };
-    const isClickOutside = useClickOutside(dropdownRef);
-
     watch(isClickOutside, () => {
-      if (isOpen.value && isClickOutside.value) {
+      if (isClickOutside.value && isOpen.value) {
         isOpen.value = false;
       }
     });
+    watch(route, () => {
+      isOpen.value = false;
+    });
     return {
       isOpen,
-      toggleOpen,
       dropdownRef,
+      toggleOpen,
     };
   },
 });
 </script>
+
+<style scoped></style>
